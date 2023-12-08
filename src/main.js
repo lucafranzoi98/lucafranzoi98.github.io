@@ -1,5 +1,5 @@
 import { createApp } from 'https://unpkg.com/vue@3/dist/vue.global.js'
-import './style.scss'
+import './style.css'
 import App from './App.vue'
 
 import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.js';
