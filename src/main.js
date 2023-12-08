@@ -3,7 +3,6 @@ import './style.scss'
 import App from './App.vue'
 
 import * as THREE from 'https://unpkg.com/three@0.159.0/build/three.js';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'https://unpkg.com/three@0.159.0/examples/jsm/loaders/GLTFLoader.js';
 
 let widthW = window.innerWidth;
