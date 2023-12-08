@@ -1,0 +1,49 @@
+@import url('../node_modules/bootstrap/scss/bootstrap.scss');
+
+@font-face {
+    font-family: 'Montserrat';
+    src: url(../public/assets/font/montserrat/Montserrat-Regular.ttf);
+}
+
+@font-face {
+    font-family: 'Bauhaus';
+    src: url(../public/assets/font/bauhaus/BauhausRegular.ttf);
+}
+
+body {
+    overflow-x: hidden;
+    color: white;
+    font-family: 'Montserrat';
+}
+
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+}
+
+main {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    z-index: 10;
+}
+
+section {
+    height: 100%;
+}
+
+h1{
+    font-size: 4rem;
+}
+
+section{
+    padding: 3rem 5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
+}
+
+p{
+    width: 33%;
+}
