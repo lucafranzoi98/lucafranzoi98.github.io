@@ -2,7 +2,7 @@ import { createApp } from 'https://unpkg.com/vue@3/dist/vue.global.js'
 import './style.scss'
 import App from './App.vue'
 
-import * as THREE from 'three';
+import * as THREE from 'https://unpkg.com/v0.159.0/build/three.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
