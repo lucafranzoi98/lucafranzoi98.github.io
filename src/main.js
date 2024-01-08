@@ -53,32 +53,48 @@ window.addEventListener('resize', () => {
     onWindowResize();
 });
 
-const v1 = new THREE.Vector3(6, 2, 2);
-const v2 = new THREE.Vector3(0, -12, -10);
-const v3 = new THREE.Vector3(-9, 8, 5);
-const curvePath = new THREE.QuadraticBezierCurve3(v1, v2, v3);
+const curvePath = new THREE.CatmullRomCurve3( [
+	new THREE.Vector3( 2, 2, 2 ),
+	new THREE.Vector3( 5, -5, -5 ),
+	new THREE.Vector3( 3, -7, 5 ),
+	new THREE.Vector3( -4, -2, 9 ),
+	new THREE.Vector3( 2, 2, 2 ),
+] );
 
 //To see the curve
-const v3Array = curvePath.getPoints(20);
-const geometryCurve = new THREE.BufferGeometry().setFromPoints(v3Array);
+const pathPoints = curvePath.getPoints(200);
+const geometryCurve = new THREE.BufferGeometry().setFromPoints(pathPoints);
 const materialCurve = new THREE.LineBasicMaterial({ color: 0xffffff });
-//console.log(v3Array);
+//console.log(pathPoints);
 const points = new THREE.Line(geometryCurve, materialCurve);
-scene.add(points);
+//scene.add(points);
 
 //array con vettore Attivo, vettore Succ, percentuale cioè i:lunghezzaArray=x:100
 
-const vxArray = [];
-
-for (let i = 0; i < v3Array.length - 1; i++) {
-    vxArray.push({
-        'vxActual': v3Array[i].x,
-        'vxNext': v3Array[(i + 1)].x,
-        'perc': Math.round((i * 100) / (v3Array.length - 2))
-    })
+const path = [];
+for (let i = 0; i < pathPoints.length - 1; i++) {
+    path.push(
+        [
+        {
+            'vxActual': pathPoints[i].x,
+            'vxNext': pathPoints[(i + 1)].x,
+            'perc': Math.round((i * 100) / (pathPoints.length - 1))
+        },
+        {
+            'vyActual': pathPoints[i].y,
+            'vyNext': pathPoints[(i + 1)].y,
+            'perc': Math.round((i * 100) / (pathPoints.length - 1))
+        },
+        {
+            'vzActual': pathPoints[i].z,
+            'vzNext': pathPoints[(i + 1)].z,
+            'perc': Math.round((i * 100) / (pathPoints.length - 1))
+        }
+    ]
+    )
 }
 
-//console.log(vxArray);
+console.log(path);
 
 function position(start, end, percent) {
     return (1 - percent) * start + percent * end;
@@ -91,43 +107,19 @@ function scalePercent(start, end) {
 
 const animationScripts = []
 
-// animationScripts.push({
-//     start: 0,
-//     end: 100,
-//     func: () => {
-//         vxArray.forEach(point => {
-//             camera.position.x = position(point.vxActual, point.vxNext, point.perc);
+path.forEach(point => {
+    animationScripts.push({
+        start: point[0].perc,
+        end: point[0].perc + 5,
+        func: () => {
+            camera.position.x = position(point[0].vxActual, point[0].vxNext, point[0].perc);
+            camera.position.y = position(point[1].vyActual, point[1].vyNext, point[1].perc);
+            camera.position.z = position(point[2].vzActual, point[2].vzNext, point[2].perc);
+            camera.lookAt(cube.position)
+        },
+    })
+});
 
-//         })
-//         camera.position.y = position(1, 5, scalePercent(0, 49))
-//         camera.position.z = position(1, 5, scalePercent(0, 49))
-//         camera.lookAt(cube.position)
-//         console.log(camera.position);
-//     },
-// })
-
-//add an animation that moves the camera between 0 - 100 percent of scroll
-animationScripts.push({
-    start: 0,
-    end: 49,
-    func: () => {
-        camera.position.x = position(1, 5, scalePercent(0, 49))
-        camera.position.y = position(1, 5, scalePercent(0, 49))
-        camera.position.z = position(1, 5, scalePercent(0, 49))
-        camera.lookAt(cube.position)
-    },
-})
-
-animationScripts.push({
-    start: 49,
-    end: 100,
-    func: () => {
-        camera.position.x = position(5, 10, scalePercent(49, 100))
-        camera.position.y = position(5, 10, scalePercent(49, 100))
-        camera.position.z = position(5, 10, scalePercent(49, 100))
-        camera.lookAt(cube.position)
-    },
-})
 
 function playScrollAnimations() {
     animationScripts.forEach((a) => {
@@ -156,7 +148,5 @@ function animate() {
 }
 
 animate();
-
-//const controls = new OrbitControls(camera, renderer.domElement);
 
 createApp(App).mount('#app')
