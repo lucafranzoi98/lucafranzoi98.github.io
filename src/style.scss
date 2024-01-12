@@ -20,6 +20,7 @@ canvas {
     position: fixed;
     top: 0;
     left: 0;
+    background-image: radial-gradient(#3d3d3d, #1c1c1c);
 }
 
 main {
@@ -29,20 +30,18 @@ main {
     z-index: 10;
 }
 
-section {
+section{
     height: 100%;
+    padding: 3rem 5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
 }
 
 h1{
     font-size: 4rem;
 }
 
-section{
-    padding: 3rem 5rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: end;
-}
 
 p{
     width: 33%;

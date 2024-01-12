@@ -11,10 +11,10 @@ let heightW = window.innerHeight;
 
 // Add scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x1f1f1f);
+//scene.background = new THREE.Color(0x1f1f1f);
 
 // Add camera
-const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.1, 1000);
+const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.1, 100);
 
 // Add light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -36,13 +36,22 @@ loader.load(model, function (gltf) {
     console.error(error);
 });
 
+const model2 = '/assets/3d/Toy_Rocket.glb'
+const loader2 = new GLTFLoader();
+loader2.load(model2, function (gltf) {
+    gltf.scene.position.set(3, 3, 3);
+    scene.add(gltf.scene);
+}, undefined, function (error) {
+    console.error(error);
+});
+
 // Add geometry to make camera look at (same position of 3d model)
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshNormalMaterial();
 const cube = new THREE.Mesh(geometry, material);
 
 // Render of scene
-const renderer = new THREE.WebGLRenderer({antialias: true});
+const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
 
@@ -59,11 +68,9 @@ window.addEventListener('resize', () => {
 
 // Create path for the camera to move along
 const curvePath = new THREE.CatmullRomCurve3( [
-	new THREE.Vector3( 2, 2, 2 ),
-	new THREE.Vector3( 5, -5, -5 ),
-	new THREE.Vector3( 3, -7, 5 ),
-	new THREE.Vector3( -4, -2, 9 ),
-	new THREE.Vector3( 2, 2, 2 ),
+	new THREE.Vector3( 1, 1, 1),
+	new THREE.Vector3( 2, 5, 5 ),
+	new THREE.Vector3( 8, 7, 6 ),
 ] );
 
 // Get individual points from path
@@ -114,7 +121,8 @@ path.forEach(point => {
             camera.position.x = position(point[0].vxActual, point[0].vxNext, point[0].perc);
             camera.position.y = position(point[1].vyActual, point[1].vyNext, point[1].perc);
             camera.position.z = position(point[2].vzActual, point[2].vzNext, point[2].perc);
-            camera.lookAt(cube.position)
+            camera.lookAt(cube.position);
+            //camera.lookAt(point[0].vxNext, point[1].vyNext, point[2].vzNext);
         },
     })
 });
@@ -143,5 +151,6 @@ function animate() {
 }
 
 animate();
+
 
 createApp(App).mount('#app')
