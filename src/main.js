@@ -3,24 +3,30 @@ import './style.scss'
 import App from './App.vue'
 
 import * as THREE from 'three';
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+// Window size
 let widthW = window.innerWidth;
 let heightW = window.innerHeight;
 
+// Add scene
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x1f1f1f);
+
+// Add camera
 const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.1, 1000);
 
+// Add light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
 directionalLight.position.set(10, 10, 10);
 scene.add(directionalLight);
 
+// Add light
 const directionalLightBack = new THREE.DirectionalLight(0xffffff, 1);
 directionalLightBack.position.set(-10, -10, -10);
 scene.add(directionalLightBack);
 
+// Add 3d model
 const model = '/assets/3d/Toy_Rocket.glb'
 const loader = new GLTFLoader();
 loader.load(model, function (gltf) {
@@ -30,19 +36,17 @@ loader.load(model, function (gltf) {
     console.error(error);
 });
 
+// Add geometry to make camera look at (same position of 3d model)
 const geometry = new THREE.BoxGeometry(1, 1, 1);
 const material = new THREE.MeshNormalMaterial();
 const cube = new THREE.Mesh(geometry, material);
-//scene.add(cube);
 
-const renderer = new THREE.WebGLRenderer();
+// Render of scene
+const renderer = new THREE.WebGLRenderer({antialias: true});
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
 
-// Add axes helper
-const axesHelper = new THREE.AxesHelper(5);
-//scene.add(axesHelper);
-
+// Render scene on window resize
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -53,6 +57,7 @@ window.addEventListener('resize', () => {
     onWindowResize();
 });
 
+// Create path for the camera to move along
 const curvePath = new THREE.CatmullRomCurve3( [
 	new THREE.Vector3( 2, 2, 2 ),
 	new THREE.Vector3( 5, -5, -5 ),
@@ -61,16 +66,10 @@ const curvePath = new THREE.CatmullRomCurve3( [
 	new THREE.Vector3( 2, 2, 2 ),
 ] );
 
-//To see the curve
-const pathPoints = curvePath.getPoints(200);
-const geometryCurve = new THREE.BufferGeometry().setFromPoints(pathPoints);
-const materialCurve = new THREE.LineBasicMaterial({ color: 0xffffff });
-//console.log(pathPoints);
-const points = new THREE.Line(geometryCurve, materialCurve);
-//scene.add(points);
+// Get individual points from path
+const pathPoints = curvePath.getPoints(300);
 
-//array con vettore Attivo, vettore Succ, percentuale cioè i:lunghezzaArray=x:100
-
+// Array for each point with actual coordinate, next coordinate and percentual, for each xyz coordinate
 const path = [];
 for (let i = 0; i < pathPoints.length - 1; i++) {
     path.push(
@@ -94,11 +93,12 @@ for (let i = 0; i < pathPoints.length - 1; i++) {
     )
 }
 
-console.log(path);
-
+// Calc the position along the total points
 function position(start, end, percent) {
     return (1 - percent) * start + percent * end;
 }
+
+let scrollPercent = 0
 
 // Used to fit the positions to start and end at specific scrolling percentages
 function scalePercent(start, end) {
@@ -106,7 +106,6 @@ function scalePercent(start, end) {
 }
 
 const animationScripts = []
-
 path.forEach(point => {
     animationScripts.push({
         start: point[0].perc,
@@ -120,7 +119,6 @@ path.forEach(point => {
     })
 });
 
-
 function playScrollAnimations() {
     animationScripts.forEach((a) => {
         if (scrollPercent >= a.start && scrollPercent < a.end) {
@@ -129,16 +127,13 @@ function playScrollAnimations() {
     })
 }
 
-let scrollPercent = 0
-
 document.body.onscroll = () => {
     //calculate the current scroll progress as a percentage
     scrollPercent =
         ((document.documentElement.scrollTop || document.body.scrollTop) /
             ((document.documentElement.scrollHeight || document.body.scrollHeight) -
                 document.documentElement.clientHeight)) *
-        100
-
+        100;
 }
 
 function animate() {
