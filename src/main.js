@@ -4,6 +4,7 @@ import App from './App.vue'
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { WebGLRenderer } from "three";
 
 // Window size
 let widthW = window.innerWidth;
@@ -51,7 +52,11 @@ const material = new THREE.MeshNormalMaterial();
 const cube = new THREE.Mesh(geometry, material);
 
 // Render of scene
-const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+const renderer = new WebGLRenderer({
+    powerPreference: "high-performance",
+    antialias: true,
+    alpha: true,
+});
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
 
