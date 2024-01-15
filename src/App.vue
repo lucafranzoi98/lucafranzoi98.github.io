@@ -8,7 +8,7 @@ export default {
     <main>
         <section>
             <h1 class="fw-bold text-uppercase">Luca Franzoi</h1>
-            <h3 class="fst-italic fw-semibold">Let's begin the adventure!</h3>
+            <h3 class="fst-italic fw-semibold">Work in progress!</h3>
         </section>
         <section>
             <h2>Title 1</h2>

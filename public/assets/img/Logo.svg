@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 172">
+  <defs>
+    <style>
+      .cls-1 {
+        mix-blend-mode: soft-light;
+      }
+
+      .cls-2 {
+        isolation: isolate;
+      }
+
+      .cls-3 {
+        fill: #4f4f4f;
+      }
+
+      .cls-3, .cls-4 {
+        stroke-width: 0px;
+      }
+
+      .cls-4 {
+        fill: #ff791f;
+      }
+    </style>
+  </defs>
+  <g class="cls-2">
+    <g id="Livello_2" data-name="Livello 2">
+      <g id="Livello_1-2" data-name="Livello 1">
+        <g class="cls-1">
+          <path class="cls-3" d="M90,96h-45c-2.76,0-5-2.24-5-5v-10c0-2.76,2.24-5,5-5h45v20Z"/>
+        </g>
+        <path class="cls-3" d="M90,20v152h10c5.52,0,10-4.48,10-10V10h0c0-5.52-4.48-10-10-10H10C4.48,0,0,4.48,0,10v10h90Z"/>
+        <g class="cls-1">
+          <path class="cls-4" d="M20,152V0h-10C4.48,0,0,4.48,0,10v152h0c0,5.52,4.48,10,10,10h90c5.52,0,10-4.48,10-10v-10H20Z"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
