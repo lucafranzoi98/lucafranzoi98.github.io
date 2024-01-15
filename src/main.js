@@ -5,6 +5,10 @@ import App from './App.vue'
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { WebGLRenderer } from "three";
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // Window size
 let widthW = window.innerWidth;
@@ -12,10 +16,10 @@ let heightW = window.innerHeight;
 
 // Add scene
 const scene = new THREE.Scene();
-//scene.background = new THREE.Color(0x1f1f1f);
+scene.background = new THREE.Color( 0x3d3d3d );
 
 // Add camera
-const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.1, 100);
+const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.01, 1000);
 
 // Add light
 const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -37,7 +41,7 @@ loader.load(model, function (gltf) {
     console.error(error);
 });
 
-const model2 = '/assets/3d/Toy_Rocket.glb'
+const model2 = '/assets/3d/free_car_001.gltf'
 const loader2 = new GLTFLoader();
 loader2.load(model2, function (gltf) {
     gltf.scene.position.set(3, 3, 3);
@@ -60,11 +64,28 @@ const renderer = new WebGLRenderer({
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
 
+// Add pass
+const composer = new EffectComposer(renderer);
+
+const renderPass = new RenderPass( scene, camera );
+composer.addPass( renderPass );
+
+const bokehPass = new BokehPass(scene, camera, {
+    focus: 3.0, // Set the focus distance
+    aperture: 0.002, // Adjust the aperture for depth of field effect
+    maxblur: 0.01, // Maximum blur strength
+});
+composer.addPass( bokehPass );
+
+const outputPass = new OutputPass();
+composer.addPass( outputPass );
+
 // Render scene on window resize
 function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight;
-    renderer.setSize(window.innerWidth, window.innerHeight);
     camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    composer.setSize(window.innerWidth, window.innerHeight);
 };
 
 window.addEventListener('resize', () => {
@@ -72,11 +93,11 @@ window.addEventListener('resize', () => {
 });
 
 // Create path for the camera to move along
-const curvePath = new THREE.CatmullRomCurve3( [
-	new THREE.Vector3( 1, 1, 1),
-	new THREE.Vector3( 2, 5, 5 ),
-	new THREE.Vector3( 8, 7, 6 ),
-] );
+const curvePath = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(1, 1, 1),
+    new THREE.Vector3(2, 5, 5),
+    new THREE.Vector3(8, 7, 6),
+]);
 
 // Get individual points from path
 const pathPoints = curvePath.getPoints(300);
@@ -86,22 +107,22 @@ const path = [];
 for (let i = 0; i < pathPoints.length - 1; i++) {
     path.push(
         [
-        {
-            'vxActual': pathPoints[i].x,
-            'vxNext': pathPoints[(i + 1)].x,
-            'perc': Math.round((i * 100) / (pathPoints.length - 1))
-        },
-        {
-            'vyActual': pathPoints[i].y,
-            'vyNext': pathPoints[(i + 1)].y,
-            'perc': Math.round((i * 100) / (pathPoints.length - 1))
-        },
-        {
-            'vzActual': pathPoints[i].z,
-            'vzNext': pathPoints[(i + 1)].z,
-            'perc': Math.round((i * 100) / (pathPoints.length - 1))
-        }
-    ]
+            {
+                'vxActual': pathPoints[i].x,
+                'vxNext': pathPoints[(i + 1)].x,
+                'perc': Math.round((i * 100) / (pathPoints.length - 1))
+            },
+            {
+                'vyActual': pathPoints[i].y,
+                'vyNext': pathPoints[(i + 1)].y,
+                'perc': Math.round((i * 100) / (pathPoints.length - 1))
+            },
+            {
+                'vzActual': pathPoints[i].z,
+                'vzNext': pathPoints[(i + 1)].z,
+                'perc': Math.round((i * 100) / (pathPoints.length - 1))
+            }
+        ]
     )
 }
 
@@ -111,11 +132,6 @@ function position(start, end, percent) {
 }
 
 let scrollPercent = 0
-
-// Used to fit the positions to start and end at specific scrolling percentages
-function scalePercent(start, end) {
-    return (scrollPercent - start) / (end - start)
-}
 
 const animationScripts = []
 path.forEach(point => {
@@ -152,10 +168,9 @@ document.body.onscroll = () => {
 function animate() {
     requestAnimationFrame(animate);
     playScrollAnimations();
-    renderer.render(scene, camera);
+    composer.render();
 }
 
 animate();
-
 
 createApp(App).mount('#app')
