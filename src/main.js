@@ -16,7 +16,7 @@ let heightW = window.innerHeight;
 
 // Add scene
 const scene = new THREE.Scene();
-scene.background = new THREE.Color( 0x3d3d3d );
+scene.background = new THREE.Color(0x3d3d3d);
 
 // Add camera
 const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.01, 1000);
@@ -35,7 +35,7 @@ scene.add(directionalLightBack);
 const model = '/assets/3d/Toy_Rocket.glb'
 const loader = new GLTFLoader();
 loader.load(model, function (gltf) {
-    gltf.scene.position.set(0, -2, 0);
+    gltf.scene.position.set(5, -2, 5);
     scene.add(gltf.scene);
 }, undefined, function (error) {
     console.error(error);
@@ -44,16 +44,18 @@ loader.load(model, function (gltf) {
 const model2 = '/assets/3d/free_car_001.gltf'
 const loader2 = new GLTFLoader();
 loader2.load(model2, function (gltf) {
-    gltf.scene.position.set(3, 3, 3);
+    gltf.scene.position.set(0, 1, 12);
     scene.add(gltf.scene);
 }, undefined, function (error) {
     console.error(error);
 });
 
-// Add geometry to make camera look at (same position of 3d model)
-const geometry = new THREE.BoxGeometry(1, 1, 1);
-const material = new THREE.MeshNormalMaterial();
-const cube = new THREE.Mesh(geometry, material);
+// Model 3
+const geometry3 = new THREE.BoxGeometry(1, 1, 1);
+const material3 = new THREE.MeshNormalMaterial();
+const model3 = new THREE.Mesh(geometry3, material3);
+model3.position.set(-8, 2, 4);
+scene.add(model3);
 
 // Render of scene
 const renderer = new WebGLRenderer({
@@ -67,18 +69,18 @@ document.body.appendChild(renderer.domElement);
 // Add pass
 const composer = new EffectComposer(renderer);
 
-const renderPass = new RenderPass( scene, camera );
-composer.addPass( renderPass );
+const renderPass = new RenderPass(scene, camera);
+composer.addPass(renderPass);
 
 const bokehPass = new BokehPass(scene, camera, {
     focus: 3.0, // Set the focus distance
     aperture: 0.002, // Adjust the aperture for depth of field effect
     maxblur: 0.01, // Maximum blur strength
 });
-composer.addPass( bokehPass );
+composer.addPass(bokehPass);
 
 const outputPass = new OutputPass();
-composer.addPass( outputPass );
+composer.addPass(outputPass);
 
 // Render scene on window resize
 function onWindowResize() {
@@ -94,9 +96,12 @@ window.addEventListener('resize', () => {
 
 // Create path for the camera to move along
 const curvePath = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(1, 1, 1),
-    new THREE.Vector3(2, 5, 5),
-    new THREE.Vector3(8, 7, 6),
+    new THREE.Vector3(0, 0, 0),
+    new THREE.Vector3(2, 0, 2),
+    new THREE.Vector3(5, 2, 10),
+    new THREE.Vector3(2, 2, 12),
+    new THREE.Vector3(-4, 5, 8),
+    new THREE.Vector3(-7, 3, 5),
 ]);
 
 // Get individual points from path
@@ -134,16 +139,16 @@ function position(start, end, percent) {
 let scrollPercent = 0
 
 const animationScripts = []
+
 path.forEach(point => {
     animationScripts.push({
         start: point[0].perc,
         end: point[0].perc + 5,
         func: () => {
-            camera.position.x = position(point[0].vxActual, point[0].vxNext, point[0].perc);
-            camera.position.y = position(point[1].vyActual, point[1].vyNext, point[1].perc);
-            camera.position.z = position(point[2].vzActual, point[2].vzNext, point[2].perc);
-            camera.lookAt(cube.position);
-            //camera.lookAt(point[0].vxNext, point[1].vyNext, point[2].vzNext);
+            camera.position.x = point[0].vxActual;
+            camera.position.y = point[1].vyActual;
+            camera.position.z = point[2].vzActual;
+            camera.lookAt(point[0].vxNext, point[1].vyNext, point[2].vzNext);
         },
     })
 });
