@@ -5,7 +5,7 @@ export default {
 </script>
 
 <template>
-    <main>
+    <!-- <main>
         <section>
             <h1 class="fw-bold text-uppercase">Luca Franzoi</h1>
             <h3 class="fst-italic fw-semibold">Work in progress!</h3>
@@ -37,5 +37,5 @@ export default {
                 maxime? Delectus aliquid error hic. Aut pariatur illum libero explicabo aspernatur nulla ipsum, quam
                 perspiciatis?</p>
         </section>
-    </main>
+    </main> -->
 </template>

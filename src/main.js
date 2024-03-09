@@ -9,10 +9,15 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+import { degToRad } from 'three/src/math/MathUtils';
+import { Reflector } from 'three/examples/jsm/objects/Reflector'
 
 // Window size
 let widthW = window.innerWidth;
 let heightW = window.innerHeight;
+const pixelRatio = window.devicePixelRatio;
 
 // Add scene
 const scene = new THREE.Scene();
@@ -31,38 +36,49 @@ const directionalLightBack = new THREE.DirectionalLight(0xffffff, 1);
 directionalLightBack.position.set(-10, -10, -10);
 scene.add(directionalLightBack);
 
-// Add 3d model
-const model = '/assets/3d/Toy_Rocket.glb'
-const loader = new GLTFLoader();
-loader.load(model, function (gltf) {
-    gltf.scene.position.set(5, -2, 5);
-    scene.add(gltf.scene);
-}, undefined, function (error) {
-    console.error(error);
+// Create floor
+const floor = new Reflector(new THREE.PlaneGeometry(1000, 1000), {
+    color: new THREE.Color(0x7f7f7f),
+    textureWidth: widthW * window.devicePixelRatio,
+    textureHeight: heightW * window.devicePixelRatio,
 });
+floor.rotateX(degToRad(90));
+floor.rotateY(degToRad(180));
+scene.add(floor);
 
-const model2 = '/assets/3d/free_car_001.gltf'
-const loader2 = new GLTFLoader();
-loader2.load(model2, function (gltf) {
-    gltf.scene.position.set(0, 1, 12);
-    scene.add(gltf.scene);
-}, undefined, function (error) {
-    console.error(error);
-});
+// Add 3d model
+// const model = '/assets/3d/Toy_Rocket.glb'
+// const loader = new GLTFLoader();
+// loader.load(model, function (gltf) {
+//     gltf.scene.position.set(5, -2, 5);
+//     scene.add(gltf.scene);
+// }, undefined, function (error) {
+//     console.error(error);
+// });
+
+// Model 1
+const geometry1 = new THREE.BoxGeometry(1, 1, 1);
+const material1 = new THREE.MeshNormalMaterial();
+const model1 = new THREE.Mesh(geometry1, material1);
+model1.position.set(5, 2, 5);
+scene.add(model1);
+
+// Model 2
+const geometry2 = new THREE.BoxGeometry(1, 1, 1);
+const material2 = new THREE.MeshNormalMaterial();
+const model2 = new THREE.Mesh(geometry2, material2);
+model2.position.set(0, 5, 12);
+scene.add(model2);
 
 // Model 3
 const geometry3 = new THREE.BoxGeometry(1, 1, 1);
 const material3 = new THREE.MeshNormalMaterial();
 const model3 = new THREE.Mesh(geometry3, material3);
-model3.position.set(-8, 2, 4);
+model3.position.set(-8, 5, 4);
 scene.add(model3);
 
 // Render of scene
-const renderer = new WebGLRenderer({
-    powerPreference: "high-performance",
-    antialias: true,
-    alpha: true,
-});
+const renderer = new WebGLRenderer();
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
 
@@ -72,15 +88,23 @@ const composer = new EffectComposer(renderer);
 const renderPass = new RenderPass(scene, camera);
 composer.addPass(renderPass);
 
-const bokehPass = new BokehPass(scene, camera, {
-    focus: 3.0, // Set the focus distance
-    aperture: 0.002, // Adjust the aperture for depth of field effect
-    maxblur: 0.01, // Maximum blur strength
-});
-composer.addPass(bokehPass);
+// const bokehPass = new BokehPass(scene, camera, {
+//     focus: 2.0, // Set the focus distance
+//     aperture: 0.0002, // Adjust the aperture for depth of field effect
+//     maxblur: 0.02, // Maximum blur strength
+// });
+// composer.addPass(bokehPass);
 
 const outputPass = new OutputPass();
 composer.addPass(outputPass);
+
+// Antialias pass
+const fxaaPass = new ShaderPass(FXAAShader);
+
+fxaaPass.material.uniforms['resolution'].value.x = 1 / (widthW * pixelRatio);
+fxaaPass.material.uniforms['resolution'].value.y = 1 / (heightW * pixelRatio);
+
+composer.addPass(fxaaPass);
 
 // Render scene on window resize
 function onWindowResize() {
@@ -96,12 +120,12 @@ window.addEventListener('resize', () => {
 
 // Create path for the camera to move along
 const curvePath = new THREE.CatmullRomCurve3([
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(2, 0, 2),
-    new THREE.Vector3(5, 2, 10),
-    new THREE.Vector3(2, 2, 12),
-    new THREE.Vector3(-4, 5, 8),
-    new THREE.Vector3(-7, 3, 5),
+    new THREE.Vector3(0, 9, 0),
+    new THREE.Vector3(2, 3, 2),
+    new THREE.Vector3(5, 3, 10),
+    new THREE.Vector3(2, 3, 12),
+    new THREE.Vector3(-4, 10, 8),
+    new THREE.Vector3(-7, 6, 5),
 ]);
 
 // Get individual points from path

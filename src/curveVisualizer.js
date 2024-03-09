@@ -1,5 +1,8 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { degToRad } from 'three/src/math/MathUtils';
+import { Reflector } from 'three/examples/jsm/objects/Reflector'
 
 // Window size
 let widthW = window.innerWidth;
@@ -9,6 +12,10 @@ let heightW = window.innerHeight;
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x3d3d3d);
 
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 10);
+scene.add(directionalLight);
+
 // Add camera
 const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.01, 1000);
 camera.position.set(15, 15, 15);
@@ -16,6 +23,16 @@ camera.position.set(15, 15, 15);
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+
+// Create floor
+const floor = new Reflector(new THREE.PlaneGeometry(1000, 1000), {
+    color: new THREE.Color(0x7f7f7f),
+    textureWidth: widthW * window.devicePixelRatio,
+    textureHeight: heightW * window.devicePixelRatio,
+});
+floor.rotateX(degToRad(90));
+floor.rotateY(degToRad(180));
+scene.add(floor);
 
 // Create path for the camera to move along
 const curvePath = new THREE.CatmullRomCurve3([
@@ -31,11 +48,20 @@ const curvePath = new THREE.CatmullRomCurve3([
 const pathPoints = curvePath.getPoints(300);
 
 // To see path
-const geometryPoints = new THREE.BufferGeometry().setFromPoints( pathPoints );
-const materialPoints = new THREE.LineBasicMaterial( { color: 0xffffff } );
+const geometryPoints = new THREE.BufferGeometry().setFromPoints(pathPoints);
+const materialPoints = new THREE.LineBasicMaterial({ color: 0xffffff });
 
-const line = new THREE.Line( geometryPoints, materialPoints );
-scene.add( line );
+const line = new THREE.Line(geometryPoints, materialPoints);
+scene.add(line);
+
+const model = '/assets/3d/Toy_Rocket.glb'
+const loader = new GLTFLoader();
+loader.load(model, function (gltf) {
+    gltf.scene.position.set(2, 2, 2);
+    scene.add(gltf.scene);
+}, undefined, function (error) {
+    console.error(error);
+});
 
 // Model 1
 const geometry1 = new THREE.BoxGeometry(1, 1, 1);
@@ -61,8 +87,8 @@ scene.add(model3);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.update();
 
-const axesHelper = new THREE.AxesHelper( 5 );
-scene.add( axesHelper );
+const axesHelper = new THREE.AxesHelper(5);
+scene.add(axesHelper);
 
 function animate() {
     requestAnimationFrame(animate);
