@@ -8,24 +8,29 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { degToRad } from 'three/src/math/MathUtils';
 import { Reflector } from 'three/examples/jsm/objects/Reflector'
-import { Timer } from 'three/addons/misc/Timer.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 
 // Window size
 let widthW = window.innerWidth;
 let heightW = window.innerHeight;
+const pixelRatio = window.devicePixelRatio;
 
 // Add scene
 const scene = new THREE.Scene();
 
 // Add light
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(10, 10, 10);
-scene.add(directionalLight);
+const light = new THREE.HemisphereLight( 0xffe4bb, 1 );
+scene.add( light );
 
 // Add camera
-const camera = new THREE.PerspectiveCamera(50, widthW / heightW, 0.01, 1000);
-camera.position.set(10, 5, 10);
-camera.lookAt(0, 1, 0);
+const camera = new THREE.PerspectiveCamera(75, widthW / heightW, 0.001, 1000);
+camera.position.set(6, 7, 6);
+camera.lookAt(0, 2, 0);
 
 // Create floor
 const floor = new Reflector(new THREE.PlaneGeometry(1000, 1000), {
@@ -47,7 +52,7 @@ scene.add(bg);
 // Particles
 const vertices = [];
 
-for (let i = 0; i < 100000; i++) {
+for (let i = 0; i < 400000; i++) {
     const x = THREE.MathUtils.randFloatSpread(200);
     const y = THREE.MathUtils.randFloatSpread(200);
     const z = THREE.MathUtils.randFloatSpread(200);
@@ -58,44 +63,50 @@ const circle = new THREE.TextureLoader().load('/assets/img/circle.png');
 
 const particlesGeo = new THREE.BufferGeometry();
 particlesGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
-const particlesMat = new THREE.PointsMaterial({ color: 0xffa500, size: 0.2, map: circle, alphaTest: 0.5, transparent: true });
+const particlesMat = new THREE.PointsMaterial({ color: 0xffa500, size: 0.2, map: circle, transparent: true });
 const particles = new THREE.Points(particlesGeo, particlesMat);
 scene.add(particles);
 
+let rocket;
 const model = '/assets/3d/Toy_Rocket.glb'
 const loader = new GLTFLoader();
 loader.load(model, function (gltf) {
-    gltf.scene.position.set(0, 0, 0);
-    scene.add(gltf.scene);
-}, undefined, function (error) {
-    console.error(error);
+    rocket = gltf.scene;
+    rocket.position.set(0, 0.5, 0);
+    rocket.scale.set(2, 2, 2);
+    scene.add(rocket);
 });
 
-// Model 1
-const geometry1 = new THREE.BoxGeometry(1, 1, 1);
-const material1 = new THREE.MeshNormalMaterial();
-const model1 = new THREE.Mesh(geometry1, material1);
-model1.position.set(5, 0, 5);
-scene.add(model1);
 
-// Model 2
-const geometry2 = new THREE.BoxGeometry(1, 1, 1);
-const material2 = new THREE.MeshNormalMaterial();
-const model2 = new THREE.Mesh(geometry2, material2);
-model2.position.set(0, 2, 12);
-scene.add(model2);
-
-// Model 3
-const geometry3 = new THREE.BoxGeometry(1, 1, 1);
-const material3 = new THREE.MeshNormalMaterial();
-const model3 = new THREE.Mesh(geometry3, material3);
-model3.position.set(-8, 2, 4);
-scene.add(model3);
 
 // Render of scene
 const renderer = new WebGLRenderer({ antialias: true });
 renderer.setSize(widthW, heightW);
 document.body.appendChild(renderer.domElement);
+
+// // Add pass
+// const composer = new EffectComposer(renderer);
+
+// const renderPass = new RenderPass(scene, camera);
+// composer.addPass(renderPass);
+
+// const bokehPass = new BokehPass(scene, camera, {
+//     focus: 10.0, // Set the focus distance
+//     aperture: 0.002, // Adjust the aperture for depth of field effect
+//     maxblur: 0.001, // Maximum blur strength
+// });
+// composer.addPass(bokehPass);
+
+// const outputPass = new OutputPass();
+// composer.addPass(outputPass);
+
+// // Antialias pass
+// const fxaaPass = new ShaderPass(FXAAShader);
+
+// fxaaPass.material.uniforms['resolution'].value.x = 1 / (widthW * pixelRatio);
+// fxaaPass.material.uniforms['resolution'].value.y = 1 / (heightW * pixelRatio);
+
+// composer.addPass(fxaaPass);
 
 // Render scene on window resize
 function onWindowResize() {
@@ -109,39 +120,35 @@ window.addEventListener('resize', () => {
 });
 
 const axesHelper = new THREE.AxesHelper(5);
-scene.add(axesHelper);
+// scene.add(axesHelper);
 
-let timer = new Timer();
-timer.setTimescale(5);
+let clock = new THREE.Clock();
 
 let direction = 1;
 
-function animate(timestamp) {
-    particles.rotation.y += 0.0001;
+function animate() {
+    particles.rotation.y += 0.0002;
+
+    let time = clock.getElapsedTime();
+    let timeRatio = (time / 5) - 1;
+
+    let scaleRatio = (-Math.pow(timeRatio, 2) + 1) / 5000;
     
-    timer.update( timestamp );
-    console.log(timer);
+    particles.scale.x += (direction == 1 ? +scaleRatio : -scaleRatio);
+    particles.scale.y += (direction == 1 ? +scaleRatio : -scaleRatio);
+    particles.scale.z += (direction == 1 ? +scaleRatio : -scaleRatio);
 
-    if (timer._currentTime >= 2000) {
-        if (direction == 1) {
-            particles.scale.x += 0.005;
-            particles.scale.y += 0.005;
-            particles.scale.z += 0.005;
-
-            direction = 2;
-            timer.reset();
-        } else {
-            particles.scale.x += -0.005;
-            particles.scale.y += -0.005;
-            particles.scale.z += -0.005;
-
-            direction = 1;
-            timer.reset();
-        }
+    if (time > 10) {
+        clock.running = false;
+        direction = -direction;
     }
 
+    if (rocket) {
+        rocket.rotation.y += -0.0005;
+    }
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+
 }
 
 animate();
