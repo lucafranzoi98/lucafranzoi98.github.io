@@ -5,8 +5,8 @@ export default {
 </script>
 
 <template>
-    <!-- <main>
-        <section>
+    <main id="main">
+        <!-- <section>
             <h1 class="fw-bold text-uppercase">Luca Franzoi</h1>
             <h3 class="fst-italic fw-semibold">Work in progress!</h3>
         </section>
@@ -36,6 +36,6 @@ export default {
             <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Impedit, ex labore. Incidunt expedita obcaecati quae
                 maxime? Delectus aliquid error hic. Aut pariatur illum libero explicabo aspernatur nulla ipsum, quam
                 perspiciatis?</p>
-        </section>
-    </main> -->
+        </section> -->
+    </main>
 </template>

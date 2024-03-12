@@ -24,8 +24,8 @@ const pixelRatio = window.devicePixelRatio;
 const scene = new THREE.Scene();
 
 // Add light
-const light = new THREE.HemisphereLight( 0xffe4bb, 1 );
-scene.add( light );
+const light = new THREE.HemisphereLight(0xffe4bb, 1);
+scene.add(light);
 
 // Add camera
 const camera = new THREE.PerspectiveCamera(75, widthW / heightW, 0.001, 1000);
@@ -67,6 +67,7 @@ const particlesMat = new THREE.PointsMaterial({ color: 0xffa500, size: 0.2, map:
 const particles = new THREE.Points(particlesGeo, particlesMat);
 scene.add(particles);
 
+let sceneMeshes = [];
 let rocket;
 const model = '/assets/3d/Toy_Rocket.glb'
 const loader = new GLTFLoader();
@@ -74,9 +75,10 @@ loader.load(model, function (gltf) {
     rocket = gltf.scene;
     rocket.position.set(0, 0.5, 0);
     rocket.scale.set(2, 2, 2);
+    rocket.userData = { URL: "http://stackoverflow.com" };
     scene.add(rocket);
+    sceneMeshes.push(gltf);
 });
-
 
 
 // Render of scene
@@ -126,6 +128,39 @@ let clock = new THREE.Clock();
 
 let direction = 1;
 
+function onClick() {
+
+    const mouse = new THREE.Vector2();
+
+    let element = document.getElementById('main');
+    let clientRect = element.getBoundingClientRect();
+    let clientX = clientRect.width;
+    let clientY = clientRect.height;
+    
+    mouse.x = (clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+    
+    let raycaster = new THREE.Raycaster();
+
+    raycaster.setFromCamera(mouse, camera);
+
+    let intersects = raycaster.intersectObjects(scene.children, false);
+
+    if (intersects.length > 0) {
+        intersects.forEach(intersect => {
+            console.log(intersect.object.type);
+            if (intersect.object == 'Mesh') {
+                console.log('A');
+            }
+        });
+        console.log(intersects);
+    }
+}
+
+window.addEventListener('click', () => {
+    onClick(MouseEvent);
+});
+
 function animate() {
     particles.rotation.y += 0.0002;
 
@@ -133,7 +168,7 @@ function animate() {
     let timeRatio = (time / 5) - 1;
 
     let scaleRatio = (-Math.pow(timeRatio, 2) + 1) / 5000;
-    
+
     particles.scale.x += (direction == 1 ? +scaleRatio : -scaleRatio);
     particles.scale.y += (direction == 1 ? +scaleRatio : -scaleRatio);
     particles.scale.z += (direction == 1 ? +scaleRatio : -scaleRatio);
@@ -146,6 +181,7 @@ function animate() {
     if (rocket) {
         rocket.rotation.y += -0.0005;
     }
+
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
 
